@@ -6,7 +6,7 @@ let updateQueue = {
     batchUpdate() {
         for (const updater of this.updaters) {
             // console.log(666);
-            updater.updateClassComponent()
+            updater.updateComponent()
         }
         this.isBatchingUpdate = false;
     }
@@ -20,20 +20,33 @@ class Updater {
     addState(partialState, callBack) {
         if (partialState) this.pendingStates.push(partialState);
         if (callBack) this.callBacks.push(callBack);
+        this.emitUpdate()
+    }
+    emitUpdate() {
         if (updateQueue.isBatchingUpdate) {
             updateQueue.updaters.add(this)
         } else {
-            this.updateClassComponent()
+            this.updateComponent()
         }
     }
-    updateClassComponent() {
+    updateComponent() {
         let { classInstance, pendingStates, callBacks } = this
         if (pendingStates.length > 0) {
-            classInstance.state = this.getState()
-            classInstance.forceUpdate()
-            callBacks.forEach(cb => cb())
-            callBacks.length = 0
+            // classInstance.state = this.getState()
+            // classInstance.forceUpdate()
+            // callBacks.forEach(cb => cb())
+            // callBacks.length = 0
+            this.shouldUpdate(classInstance, this.getState())
         }
+    }
+    shouldUpdate(classInstance, nextState) {
+        classInstance.state = nextState;
+        if (classInstance.shouldComponentUpdate && !classInstance.shouldComponentUpdate(classInstance.props, classInstance.state)) {
+            return
+        }
+        classInstance.forceUpdate()
+        // callBacks.forEach(cb => cb())
+        // callBacks.length = 0
     }
     getState() {
         let { classInstance, pendingStates, } = this
@@ -66,8 +79,11 @@ class Component {
     //     this.updateClassComponent(this, newVdom);
     // }
     forceUpdate() {
+        this.componentWillUpdate&&this.componentWillUpdate()
         let newVdom = this.render()
         this.updateClassComponent(this, newVdom);
+        this.componentDidUpdate&&this.componentDidUpdate()
+
     }
     updateClassComponent(classInstance, newRenderVdom) {
         let oldDom = classInstance.dom;
