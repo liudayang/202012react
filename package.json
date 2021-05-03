@@ -12,8 +12,9 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "export DISABLE_NEW_JSX_TRANSFORM=true&&react-scripts start",
+    "build1": "export DISABLE_NEW_JSX_TRANSFORM=true&&react-scripts build",
+    "build": "set DISABLE_NEW_JSX_TRANSFORM=true&&react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
